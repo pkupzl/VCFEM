@@ -38,7 +38,14 @@ classdef Element < handle
             elseif obj.edge_m_num>7 
                 obj.n_beta_M = 18;
             end
-            obj.n_beta_C = obj.n_beta_M;
+            if obj.edge_c_num <=5
+                obj.n_beta_C = 7;
+            elseif obj.edge_c_num<=7
+                obj.n_beta_C = 12;
+            elseif obj.edge_c_num>7 
+                obj.n_beta_C = 18;
+            end
+            %obj.n_beta_C = obj.n_beta_M;
         end
     end
 end

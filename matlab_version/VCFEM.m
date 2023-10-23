@@ -84,6 +84,7 @@ classdef VCFEM < handle
             n_beta_C = element.n_beta_C;
             G_mm = zeros(n_beta_M, n_V_E);
             G_mc = zeros(n_beta_M, n_V_C);
+            G_cc = zeros(n_beta_C,n_V_C);
             for i = 1:element.edge_m_num
                 n1 = element.edge_m{i}.n1;
                 n2 = element.edge_m{i}.n2;
@@ -108,13 +109,23 @@ classdef VCFEM < handle
                 x2 = element.node_c(2 * mod(i, element.edge_c_num) + 1);
                 y2 = element.node_c(2 * mod(i, element.edge_c_num) + 2);
                 G = obj.matrix_G_on_single_edge(n1, n2, l, x1, y1, x2, y2,G_type_m);
-                obj.G = G;%记得删掉
-                obj.G_mm = G_mm;%记得删掉
                 G_mc(:, 2 * i - 1 : 2 * i) = G_mc(:, 2 * i - 1 : 2 * i) + G(:, 1:2);
                 G_mc(:, 2 * mod(i, element.edge_c_num) + 1 : 2 * mod(i, element.edge_c_num) + 2) = G_mc(:, 2 * mod(i, element.edge_c_num) + 1 : 2 * mod(i, element.edge_c_num) + 2) + G(:, 3:4);
             end
+            for i = 1:element.edge_c_num
+                n1 = element.edge_c{i}.n1;
+                n2 = element.edge_c{i}.n2;
+                l = element.edge_c{i}.length;
+                x1 = element.node_c(2 * i - 1);
+                y1 = element.node_c(2 * i);
+                x2 = element.node_c(2 * mod(i, element.edge_c_num) + 1);
+                y2 = element.node_c(2 * mod(i, element.edge_c_num) + 2);
+                G = obj.matrix_G_on_single_edge(n1, n2, l, x1, y1, x2, y2,G_type_c);
+                G_cc(:, 2 * i - 1 : 2 * i) = G_cc(:, 2 * i - 1 : 2 * i) + G(:, 1:2);
+                G_cc(:, 2 * mod(i, element.edge_c_num) + 1 : 2 * mod(i, element.edge_c_num) + 2) = G_cc(:, 2 * mod(i, element.edge_c_num) + 1 : 2 * mod(i, element.edge_c_num) + 2) + G(:, 3:4);
+            end
             
-            G_cc = G_mc;
+            %G_cc = G_mc;假设Pc和Pm维度不同
             obj.G_mm = G_mm;
             obj.G_mc = G_mc;
             obj.G_cc = G_cc;
@@ -224,16 +235,16 @@ classdef VCFEM < handle
             end
 
             if element.edge_c_num <= 5
-                %PTSP_type_c = 7;
+                PTSP_type_c = 7;
                 H_c = zeros(7,7);
             elseif element.edge_c_num <= 7
-                %PTSP_type_c = 12;
+                PTSP_type_c = 12;
                 H_c = zeros(12,12);
             else
-                %PTSP_type_c = 18;
+                PTSP_type_c = 18;
                 H_c = zeros(18,18);
             end
-            PTSP_type_c =PTSP_type_m;
+            %PTSP_type_c =PTSP_type_m;
             x1 = element.node_m(1);
             y1 = element.node_m(2);
             for i = 2:element.edge_m_num-1
@@ -279,9 +290,9 @@ classdef VCFEM < handle
         end
         function [temporary_ke11, temporary_ke12, temporary_ke21, temporary_ke22] = temporary_keij(obj, H_m, H_c, G_mm, G_cc, G_mc)
             temporary_ke11 = G_mm' / H_m * G_mm;
-            temporary_ke12 = - G_mm' / H_m * G_cc;
+            temporary_ke12 = - G_mm' / H_m * G_mc;
             temporary_ke21 = temporary_ke12';
-            temporary_ke22 = G_cc' * (inv(H_m) + inv(H_c)) * G_cc;
+            temporary_ke22 = G_cc' * (inv(H_c)) * G_cc + G_mc' * (inv(H_m)) * G_mc;
             obj.temporary_ke11 = temporary_ke11;
             obj.temporary_ke12 = temporary_ke12;
             obj.temporary_ke21 = temporary_ke21;
@@ -320,8 +331,8 @@ classdef VCFEM < handle
         function Ke = Keij(obj, phi1, phi2, temporary_ke11, temporary_ke12, temporary_ke21, temporary_ke22)
             Ke11 = temporary_ke11;
             Ke12 = [temporary_ke12, phi1'];
-            Ke21 = Ke12';
-            %Ke21 = [temporary_ke21; phi1];
+            %Ke21 = Ke12';
+            Ke21 = [temporary_ke21; phi1];
             zero_matrix_temp = zeros(size(phi2, 1));
             Ke22 = [temporary_ke22, phi2'; phi2, zero_matrix_temp];
             Ke = Ke11 - Ke12 / Ke22 * Ke21;

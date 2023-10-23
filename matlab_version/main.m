@@ -1,4 +1,5 @@
-opt = Initialize();
+%opt = Initialize();
+opt=Initialize_from_csv('D:/VCFEM_dataset/original_image/0/',1/1024);
 mesh = Mesh(opt.node_num,...
             opt.element_num,...
             opt.nodes,...
@@ -12,6 +13,8 @@ dbc = Displacement_BC(opt.dbc_num,opt.dbc_node,opt.dbc_type,opt.d);
 vcfem = VCFEM(opt.E_m,opt.E_c,opt.pr_m,opt.pr_c);
 Ke = vcfem.assembly_global_stiffness_matrix(mesh);
 F = vcfem.calculate_global_nodal_load(mesh,load);
-vcfem.displacement_condition(dbc,10^5);
+vcfem.displacement_condition(dbc,10^10);
 K = vcfem.K;
 d_m = vcfem.solve_displacement_external_node();
+Visualize(opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints);
+Visualize(opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints,d_m);
