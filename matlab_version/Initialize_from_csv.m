@@ -43,6 +43,7 @@ function opt = Initialize_from_csv(datapath,scale_factor)
         matrix_indice = cellfun(@str2num, matrix_strArray)+1;
         opt.node_m_ids{k} = matrix_indice;
         particle_indice = cellfun(@str2num, particle_strArray)+1;
+        opt.node_c_ids{k} = particle_indice;
         [~,edge_m_num] = size(matrix_indice);
         [~,edge_c_num] = size(particle_indice);
         opt.edge_m_nums(k) = edge_m_num;

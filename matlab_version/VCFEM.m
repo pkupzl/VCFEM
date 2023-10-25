@@ -19,8 +19,8 @@ classdef VCFEM < handle
         F
         phi_m
         phi_c
-        Ke
         G
+        d_m
     end
     
     methods
@@ -328,7 +328,7 @@ classdef VCFEM < handle
             obj.phi1 = phi1;
             obj.phi2 = phi2;
         end
-        function Ke = Keij(obj, phi1, phi2, temporary_ke11, temporary_ke12, temporary_ke21, temporary_ke22)
+        function [Ke,Ke11,Ke12,Ke21,Ke22] = Keij(obj, phi1, phi2, temporary_ke11, temporary_ke12, temporary_ke21, temporary_ke22)
             Ke11 = temporary_ke11;
             Ke12 = [temporary_ke12, phi1'];
             %Ke21 = Ke12';
@@ -336,7 +336,6 @@ classdef VCFEM < handle
             zero_matrix_temp = zeros(size(phi2, 1));
             Ke22 = [temporary_ke22, phi2'; phi2, zero_matrix_temp];
             Ke = Ke11 - Ke12 / Ke22 * Ke21;
-            obj.Ke = Ke;
         end
         function K = assembly_global_stiffness_matrix(obj, mesh)
             K = zeros(mesh.node_num * 2);
@@ -346,12 +345,17 @@ classdef VCFEM < handle
                 [H_m, H_c] = obj.matrix_H(element);
                 [temporary_ke11, temporary_ke12, temporary_ke21, temporary_ke22] = obj.temporary_keij(H_m, H_c, G_mm, G_cc, G_mc);
                 [phi1, phi2] = obj.phi(element);
-                Ke = obj.Keij(phi1, phi2, temporary_ke11, temporary_ke12, temporary_ke21, temporary_ke22);
+                [Ke,Ke11,Ke12,Ke21,Ke22] = obj.Keij(phi1, phi2, temporary_ke11, temporary_ke12, temporary_ke21, temporary_ke22);
                 B = zeros(element.edge_m_num * 2, mesh.node_num * 2);
                 for j = 1:element.edge_m_num
                     B(2 * j - 1, 2 * element.node_m_id(j) - 1) = 1;
                     B(2 * j, 2 * element.node_m_id(j)) = 1;
                 end
+                element.Ke = Ke;
+                element.Ke11 = Ke11;
+                element.Ke12 = Ke12;
+                element.Ke21 = Ke21;
+                element.Ke22 = Ke22;
                 K = K + B' * Ke * B;
             end
             obj.K = K;
@@ -397,6 +401,20 @@ classdef VCFEM < handle
 
         function d_m = solve_displacement_external_node(obj)
                 d_m = obj.K \ obj.F;
+                obj.d_m = d_m;
+        end
+        function solve_displacement_internal_node(obj,mesh)
+            for i = 1:mesh.element_num
+                element = mesh.elements{i};
+                element.d_m = zeros(element.edge_m_num*2,1);
+                element.d_c = zeros(element.edge_c_num*2,1);
+                for j = 1:element.edge_m_num
+                    element.d_m(2*j-1:2*j) = obj.d_m(2*element.node_m_id(j)-1:2*element.node_m_id(j));
+                end
+                temp_d_c = -inv(element.Ke22)*(element.Ke21*element.d_m);
+                element.d_c = temp_d_c(1:2*element.edge_c_num);
+            end
+
         end
     end
 end

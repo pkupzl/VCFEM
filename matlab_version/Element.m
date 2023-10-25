@@ -5,21 +5,30 @@ classdef Element < handle
         node_m
         node_c
         node_m_id
+        node_c_id
         edge_m
         edge_c
         element_number
         n_beta_M
         n_beta_C
+        Ke
+        Ke11
+        Ke22
+        Ke21
+        Ke12
+        d_m
+        d_c
     end
     
     methods
-        function obj = Element(edge_m_num, edge_c_num, node_m, node_c, node_m_id, element_number)
-            if nargin < 6, element_number = []; end  % 默认值为[]
+        function obj = Element(edge_m_num, edge_c_num, node_m, node_c, node_m_id, node_c_id,element_number)
+            if nargin < 7, element_number = []; end  % 默认值为[]
             obj.edge_m_num = edge_m_num;
             obj.edge_c_num = edge_c_num;
             obj.node_m = node_m;
             obj.node_c = node_c;
             obj.node_m_id = node_m_id;
+            obj.node_c_id = node_c_id;
             obj.element_number = element_number;
             obj.edge_m = cell(1,edge_m_num);
             obj.edge_c = cell(1,edge_c_num);

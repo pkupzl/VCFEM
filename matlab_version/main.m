@@ -7,7 +7,8 @@ mesh = Mesh(opt.node_num,...
             opt.edge_c_nums,...
             opt.node_ms,...
             opt.node_cs,...
-            opt.node_m_ids );
+            opt.node_m_ids,...
+            opt.node_c_ids);
 load = Load(opt.load_num,opt.load_type,opt.q,opt.node_i,opt.node_j);
 dbc = Displacement_BC(opt.dbc_num,opt.dbc_node,opt.dbc_type,opt.d);
 vcfem = VCFEM(opt.E_m,opt.E_c,opt.pr_m,opt.pr_c);
@@ -16,5 +17,6 @@ F = vcfem.calculate_global_nodal_load(mesh,load);
 vcfem.displacement_condition(dbc,10^10);
 K = vcfem.K;
 d_m = vcfem.solve_displacement_external_node();
-Visualize(opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints);
-Visualize(opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints,d_m);
+vcfem.solve_displacement_internal_node(mesh);
+Visualize('g--',mesh, opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints);
+Visualize('b-',mesh, opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints,d_m,opt.particle_nodes);
