@@ -1,8 +1,8 @@
-run_example = 0;
+run_example = 1;
 if run_example==0
    opt = Initialize();
 elseif run_example==1
-    opt=Initialize_from_csv('D:/VCFEM_dataset/original_image/0/',1/1024,'上边左切');
+    opt=Initialize_from_csv('../data/',1/1024,'上边左切');
 end
 mesh = Mesh(opt.node_num,...
             opt.element_num,...
@@ -32,11 +32,5 @@ fprintf('average epsilon_xy = %f\n', total_strain_integral(3)/total_area);
 [effective_E,effective_pr] = vcfem.get_effective_modulus(total_sigma_integral/total_area,total_strain_integral/total_area);
 fprintf('effective E = %f\n', effective_E);
 fprintf('effective pr = %f\n', effective_pr);
-if run_example==0
-    Visualize('g--',mesh, opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints);
-    Visualize('b-',mesh, opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints,d_m,opt.particle_nodes);
-end
-if run_example==1
-    Visualize('g--',mesh, opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints);
-    Visualize('b-',mesh, opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints,d_m,opt.particle_nodes);
-end
+Visualize('g--',mesh, opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints);
+Visualize('b-',mesh, opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints,d_m,opt.particle_nodes);
