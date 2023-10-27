@@ -16,8 +16,21 @@ classdef Element < handle
         Ke22
         Ke21
         Ke12
+        H_m
+        H_c
+        G_mm
+        G_mc
+        G_cc
         d_m
         d_c
+        beta_m
+        beta_c
+        area_m
+        area_c
+        sigma_m_integral
+        sigma_c_integral
+        strain_m_integral
+        strain_c_integral
     end
     
     methods

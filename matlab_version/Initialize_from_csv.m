@@ -1,4 +1,4 @@
-function opt = Initialize_from_csv(datapath,scale_factor)
+function opt = Initialize_from_csv(datapath,scale_factor,type)
     % 读取保存的数据
     matrix_cleaned_nodes_filename = strcat(datapath,'matrix_cleaned_nodes.csv');
     matrix_polygon_node_indices_filename = strcat(datapath,'matrix_polygon_node_indices.csv');
@@ -107,25 +107,76 @@ function opt = Initialize_from_csv(datapath,scale_factor)
     yCoords = cellfun(@(i) opt.nodes{i}.y, num2cell(opt.rightPoints));
     % 根据y坐标进行排序，并获取排序后的序号
     [~, sortedIndices] = sort(yCoords);
-    % 根据排序后的序号重新排列leftPoints数组
+    % 根据排序后的序号重新排列rightPoints数组
     sortedRightPoints = opt.rightPoints(sortedIndices);
     opt.rightPoints = sortedRightPoints;
-    %假设在上边界施加载荷
-    opt.load_num = length(opt.topPoints)-1;
-    load_type_str = '作用均布载荷';
-    opt.load_type = cellstr(repmat(load_type_str, opt.load_num, 1));
-    q_value = -100;
-    opt.q = repmat(q_value, 1, opt.load_num);
-    opt.node_i = opt.topPoints(1:end-1);
-    opt.node_j = opt.topPoints(2:end);
-    
-    opt.dbc_num = 2*length(opt.bottomPoints);
-    opt.dbc_node = repelem(opt.bottomPoints, 2);
-    opt.dbc_type = cell(1, opt.dbc_num);
-    opt.dbc_type(mod(0:opt.dbc_num-1, 2) == 0) = {'x位移'};
-    opt.dbc_type(mod(0:opt.dbc_num-1, 2) == 1) = {'y位移'};
-    %opt.d = -1e-5 * ones(1, opt.dbc_num);
-    opt.d = zeros(1,opt.dbc_num);
+    if strcmp(type,'上下均布')
+        %假设在上边界施加载荷
+        opt.load_num = length(opt.topPoints)-1;
+        load_type_str = '作用均布载荷';
+        opt.load_type = cellstr(repmat(load_type_str, opt.load_num, 1));
+        q_value = -10;
+        opt.q = repmat(q_value, 1, opt.load_num);
+        opt.node_i = opt.topPoints(1:end-1);
+        opt.node_j = opt.topPoints(2:end);
+        
+        opt.dbc_num = 2*length(opt.bottomPoints);
+        opt.dbc_node = repelem(opt.bottomPoints, 2);
+        opt.dbc_type = cell(1, opt.dbc_num);
+        opt.dbc_type(mod(0:opt.dbc_num-1, 2) == 0) = {'x位移'};
+        opt.dbc_type(mod(0:opt.dbc_num-1, 2) == 1) = {'y位移'};
+        %opt.d = -1e-5 * ones(1, opt.dbc_num);
+        opt.d = zeros(1,opt.dbc_num);
+    elseif strcmp(type,'左右均布')
+        %假设在右边界施加载荷
+        opt.load_num = length(opt.rightPoints)-1;
+        load_type_str = '作用均布载荷';
+        opt.load_type = cellstr(repmat(load_type_str, opt.load_num, 1));
+        q_value = -10;
+        opt.q = repmat(q_value, 1, opt.load_num);
+        opt.node_i = opt.rightPoints(1:end-1);
+        opt.node_j = opt.rightPoints(2:end);
+        
+        opt.dbc_num = 2*length(opt.leftPoints);
+        opt.dbc_node = repelem(opt.leftPoints, 2);
+        opt.dbc_type = cell(1, opt.dbc_num);
+        opt.dbc_type(mod(0:opt.dbc_num-1, 2) == 0) = {'x位移'};
+        opt.dbc_type(mod(0:opt.dbc_num-1, 2) == 1) = {'y位移'};
+        %opt.d = -1e-5 * ones(1, opt.dbc_num);
+        opt.d = zeros(1,opt.dbc_num);
+    elseif strcmp(type,'双轴拉伸')
+        opt.load_num = length(opt.rightPoints)+length(opt.topPoints)+length(opt.leftPoints)+length(opt.bottomPoints)-4;
+        load_type_str = '作用均布载荷';
+        opt.load_type = cellstr(repmat(load_type_str, opt.load_num, 1));
+        q_value = -10;
+        opt.q = repmat(q_value, 1, opt.load_num);
+        opt.node_i = [opt.rightPoints(1:end-1),opt.topPoints(1:end-1),opt.leftPoints(1:end-1),opt.bottomPoints(1:end-1)];
+        opt.node_j = [opt.rightPoints(2:end),opt.topPoints(2:end),opt.leftPoints(2:end),opt.bottomPoints(2:end)];
+        opt.dbc_num = 2*length(opt.bottomPoints);
+        opt.dbc_node = repelem(opt.bottomPoints, 2);
+        opt.dbc_type = cell(1, opt.dbc_num);
+        opt.dbc_type(mod(0:opt.dbc_num-1, 2) == 0) = {'x位移'};
+        opt.dbc_type(mod(0:opt.dbc_num-1, 2) == 1) = {'y位移'};
+        %opt.d = -1e-5 * ones(1, opt.dbc_num);
+        opt.d = zeros(1,opt.dbc_num);
+    elseif strcmp(type,'上边左切')
+        %假设在上边界施加载荷
+        opt.load_num = length(opt.topPoints)-1;
+        load_type_str = '作用均布切向载荷';
+        opt.load_type = cellstr(repmat(load_type_str, opt.load_num, 1));
+        q_value = 10;
+        opt.q = repmat(q_value, 1, opt.load_num);
+        opt.node_i = opt.topPoints(1:end-1);
+        opt.node_j = opt.topPoints(2:end);
+        
+        opt.dbc_num = 2*length(opt.bottomPoints);
+        opt.dbc_node = repelem(opt.bottomPoints, 2);
+        opt.dbc_type = cell(1, opt.dbc_num);
+        opt.dbc_type(mod(0:opt.dbc_num-1, 2) == 0) = {'x位移'};
+        opt.dbc_type(mod(0:opt.dbc_num-1, 2) == 1) = {'y位移'};
+        %opt.d = -1e-5 * ones(1, opt.dbc_num);
+        opt.d = zeros(1,opt.dbc_num);
+    end
     opt.E_m = 1000;
     opt.E_c = 3000;
     opt.pr_m = 0.2;

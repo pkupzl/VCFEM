@@ -12,7 +12,10 @@ function opt = Initialize()
     opt.nodes{6} = Node(1.25, 2.5);
     opt.nodes{7} = Node(0, 2.5);
     opt.nodes{8} = Node(0, 1.25);
-    
+    opt.topPoints = [5,6,7];
+    opt.bottomPoints = [1,2,3];
+    opt.rightPoints = [3,4,5];
+    opt.leftPoints = [7,8,1];
     % 创建edge_ms
     opt.edge_ms = cell(1, opt.node_num);
     for i = 1:opt.node_num
@@ -25,8 +28,10 @@ function opt = Initialize()
     % 创建edge_cs
     points = Compute_points(1.25, 1.25, 0.7);
     opt.edge_cs = cell(1, length(points));
+    opt.particle_nodes = cell(1,length(points));
     for i = 1:length(points)
         opt.edge_cs{i} = Edge(points(i, 1), points(i, 2), points(mod(i - 1, length(points)) + 1, 1), points(mod(i - 1, length(points)) + 1, 2));
+        opt.particle_nodes{i} = Node(points(i,1),points(i,2));
     end
     
     % 创建node_ms
@@ -50,6 +55,7 @@ function opt = Initialize()
     %opt.node_m_ids = 0:opt.node_num-1;
     opt.node_m_ids = cell(1,opt.element_num);
     opt.node_m_ids{1} = 1:opt.node_num;
+    opt.node_c_ids{1} = 1:opt.node_num;
     opt.load_num = 2;
     opt.load_type = {'作用均布载荷', '作用均布载荷'};
     opt.q = [-10.0, -10.0];
