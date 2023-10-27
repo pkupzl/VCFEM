@@ -2,7 +2,7 @@ run_example = 1;
 if run_example==0
    opt = Initialize();
 elseif run_example==1
-    opt=Initialize_from_csv('../data/',1/1024,'上边左切');
+    opt=Initialize_from_csv('../data/',1/1024,'上下均布');
 end
 mesh = Mesh(opt.node_num,...
             opt.element_num,...
@@ -34,3 +34,5 @@ fprintf('effective E = %f\n', effective_E);
 fprintf('effective pr = %f\n', effective_pr);
 Visualize('g--',mesh, opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints);
 Visualize('b-',mesh, opt.nodes, opt.topPoints, opt.bottomPoints, opt.leftPoints, opt.rightPoints,d_m,opt.particle_nodes);
+fprintf('direct effective E = %f\n',opt.E_m*vcfem.total_area_m/total_area+opt.E_c*vcfem.total_area_c/total_area);
+fprintf('direct effective pr = %f\n',opt.pr_m*vcfem.total_area_m/total_area+opt.pr_c*vcfem.total_area_c/total_area);

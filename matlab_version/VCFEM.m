@@ -21,6 +21,8 @@ classdef VCFEM < handle
         phi_c
         G
         d_m
+        total_area_m
+        total_area_c
     end
     
     methods
@@ -481,6 +483,8 @@ classdef VCFEM < handle
         function [total_sigma_integral,total_strain_integral,total_area] = calculate_average_stress(obj,mesh)
             total_sigma_integral = zeros(3,1);
             total_strain_integral = zeros(3,1);
+            obj.total_area_m=0;
+            obj.total_area_c=0;
             total_area = 0;
             S_m = 1/obj.E_m*[1,-obj.pr_m,0;
                 -obj.pr_m,1,0;
@@ -535,8 +539,10 @@ classdef VCFEM < handle
                     element.strain_c_integral = element.strain_c_integral + S_c*triangle_integral;
                 end
                 total_area = total_area + element.area_m + element.area_c;
+                obj.total_area_m = obj.total_area_m+element.area_m;
+                obj.total_area_c = obj.total_area_c+element.area_c;
                 total_sigma_integral = total_sigma_integral + element.sigma_m_integral + element.sigma_c_integral;
-                total_strain_integral = total_strain_integral + element.strain_c_integral + element.strain_c_integral;
+                total_strain_integral = total_strain_integral + element.strain_m_integral + element.strain_c_integral;
             end
         end
         function [effective_E,effective_pr] = get_effective_modulus(obj,average_stress,average_strain)
